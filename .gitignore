@@ -1,0 +1,78 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+ActiveEnv.venv/
+
+# Environment variables and secrets (CRITICAL for LLM API keys)
+.env
+.env.local
+.env.*.local
+*.env
+secrets.json
+
+# Local Vector Databases & Indexes
+# (Prevents committing massive binary database files to Git)
+.chroma/
+chroma_db/
+faiss_index/
+qdrant_storage/
+duckdb/
+*.idx
+*.pkl
+*.parquet
+
+# Data & Document Directories
+# (Add your raw PDF/text data folders here so you don't commit them)
+data/
+docs/
+documents/
+inputs/
+outputs/
+storage/
+
+# Cache directories (Hugging Face embeddings, OpenAI, LLM tokens)
+.cache/
+.huggingface/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+
+genrag/
+data/
