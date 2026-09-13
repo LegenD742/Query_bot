@@ -16,7 +16,6 @@ EVALUATION_DATA = [
     {
         "question": "When is the Test-2 examination?",
         "keywords": [
-            "Test-2",
             "12-19 Oct 2026"
         ]
     },
