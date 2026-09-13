@@ -20,17 +20,20 @@ def get_vectorstore():
         model=EMBEDDING_MODEL
     )
 
-    return Chroma(
+    vectorstore = Chroma(
         collection_name=COLLECTION_NAME,
         persist_directory=CHROMA_DIR,
         embedding_function=embeddings
     )
 
+    return vectorstore
+
 
 def get_ingested_files(vectorstore):
 
-    # Get all existing metadata from Chroma
-    data = vectorstore.get()
+    data = vectorstore.get(
+        include=["metadatas"]
+    )
 
     ingested_files = set()
 
@@ -42,68 +45,106 @@ def get_ingested_files(vectorstore):
     return ingested_files
 
 
-def ingest():
+# -----------------------------
+# Ingest PDFs
+# -----------------------------
 
-    print("Starting ingestion...")
+def ingest_pdfs():
+
+    print("\nStarting PDF ingestion...\n")
 
     vectorstore = get_vectorstore()
 
-    # Files already present in Chroma
+    # PDFs already present in Chroma
     ingested_files = get_ingested_files(vectorstore)
 
-    print(f"Already ingested: {len(ingested_files)} PDF(s)")
+    print(
+        f"Already ingested: {len(ingested_files)} PDF(s)\n"
+    )
 
-    # Find PDFs
+    # Find all PDFs
     pdf_files = list(DATA_DIR.glob("*.pdf"))
 
     if not pdf_files:
-        print("No PDFs found in data/")
+
+        print("No PDF files found in data/")
+
         return
 
+    # Splitter
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1200,
-        chunk_overlap=230
+        chunk_size=1100,
+        chunk_overlap=200
     )
 
-    total_new_chunks = 0
+    new_files = 0
+    new_chunks = 0
 
+    # Process each PDF
     for pdf_file in pdf_files:
 
         filename = pdf_file.name
 
-        # Skip already ingested PDFs
+        # --------------------------------
+        # Skip already ingested documents
+        # --------------------------------
+
         if filename in ingested_files:
 
-            print(f"Skipping: {filename}")
+            print(f"SKIP  → {filename}")
 
             continue
 
-        print(f"Processing: {filename}")
+        print(f"INGEST → {filename}")
 
         # Load PDF
-        loader = PyPDFLoader(str(pdf_file))
+        loader = PyPDFLoader(
+            str(pdf_file)
+        )
 
         documents = loader.load()
 
         # Split into chunks
-        chunks = text_splitter.split_documents(documents)
-
-        # Add source metadata
-        for chunk in chunks:
-            chunk.metadata["source"] = filename
-
-        # Add to ChromaDB
-        vectorstore.add_documents(chunks)
-
-        total_new_chunks += len(chunks)
-
-        print(
-            f"Added {len(chunks)} chunks from {filename}"
+        chunks = text_splitter.split_documents(
+            documents
         )
 
-    print("\nIngestion complete!")
-    print(f"New chunks added: {total_new_chunks}")
+        # Add useful metadata
+        for chunk in chunks:
+
+            chunk.metadata["source"] = filename
+
+        # Add to Chroma
+        vectorstore.add_documents(
+            documents=chunks
+        )
+
+        print(
+            f"         {len(documents)} pages"
+        )
+
+        print(
+            f"         {len(chunks)} chunks"
+        )
+
+        new_files += 1
+        new_chunks += len(chunks)
+
+    # Summary
+    print("\n-----------------------------")
+    print("Ingestion complete")
+    print("-----------------------------")
+
+    print(
+        f"New PDFs:    {new_files}"
+    )
+
+    print(
+        f"New chunks:  {new_chunks}"
+    )
+
 
 
 if __name__ == "__main__":
-    ingest()
+
+    ingest_pdfs()
